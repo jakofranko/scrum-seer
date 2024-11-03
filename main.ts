@@ -1,55 +1,28 @@
 import TimeSpan from './timeSpan.ts';
 
-const users: User[] = [];
-const epics: Epic[] = [];
 const sprintLength = TimeSpan.fromDays(14);
 
-interface Story {
-    name: string;
-    points: number;
-    time: TimeSpan;
-    assignee: User;
-    toString(): string;
-}
-
-interface Feature {
-    name: string;
-    stories: Story[];
-    toString(): string;
-    timeToFinishByPoints(): TimeSpan;
-    timeToFinishByAverage(): number;
-}
-
-interface Epic {
-    name: string;
-    features: Feature[];
-    toString(): string;
-    timeToFinishByPoints(): TimeSpan;
-    timeToFinishByAverage(): number;
-}
-
-interface User {
-    name: string;
-    stories: Story[];
-    pointVelocity(): number;
-    timeVelocity(): number;
-    toString(): string;
-}
-
-function getCombinedUserPointVelocity(): number {
+export function getCombinedUserPointVelocity(users: User[]): number {
     const velocities = users.map((user) => user.pointVelocity());
     return velocities.reduce((total: number, velocity: number) => total + velocity, 0) / velocities.length;
 }
 
-function getCombinedUserTimeVelocity(): number {
+export function getCombinedUserTimeVelocity(users: User[]): number {
     const velocities = users.map((user) => user.timeVelocity());
     return velocities.reduce((total: number, velocity: number) => total + velocity, 0) / velocities.length;
 }
 
-class Story implements Story {
+export class Story {
+    name: string;
+    points: number;
+    assignee: User;
+    time: TimeSpan;
+
     constructor(name: string, points: number) {
         this.name = name;
         this.points = points;
+        this.assignee = new User('Unassigned');
+        this.time = TimeSpan.zero;
     }
 
     assignUser(user: User) {
@@ -58,7 +31,7 @@ class Story implements Story {
     }
 
     setTime(days: number, hours: number) {
-        this.time = TimeSpan.fromTime(days, hours, 0);
+        this.time = TimeSpan.fromTime(days, hours, 0, 0, 0);
     }
 
     toString() {
@@ -66,7 +39,10 @@ class Story implements Story {
     }
 }
 
-class User implements User {
+export class User {
+    name: string;
+    stories: Story[];
+
     constructor(name: string) {
         this.name = name;
         this.stories = [];
@@ -80,7 +56,7 @@ class User implements User {
     timeVelocity(): number {
         let numCompletedStories = 0;
         const sum: TimeSpan =  this.stories.reduce((total: TimeSpan, story: Story) => {
-            if (story.time == undefined) {
+            if (story.time == TimeSpan.zero) {
                 return total;
             } else {
                 numCompletedStories++;
@@ -116,12 +92,14 @@ class User implements User {
     }
 
     toString(): string {
-        return `${this.name} completes stories on average in ${this.timeVelocity()} hours,
-            and has a point velocity of ${this.pointVelocity()}`;
+        return `${this.name} completes stories on average in ${this.timeVelocity()} hours, and has a point velocity of ${this.pointVelocity()}`;
     }
 }
 
-class Feature implements Feature {
+export class Feature {
+    name: string;
+    stories: Story[];
+
     constructor(name: string) {
         this.name = name;
         this.stories = [];
@@ -136,14 +114,17 @@ class Feature implements Feature {
     }
 
     timeToFinishByPoints(): TimeSpan {
-        if (sprintLength == undefined) {
+        if (sprintLength == undefined || this.stories.length === 0) {
             return TimeSpan.zero;
         } else {
             const numUsers = this.stories.reduce((total: number, story: Story) => story.assignee ? total + 1 : total, 0);
             const storyPointTotal = this.getTotalPoints();            
+            
+            // Get unique array of users by converting to set and back to array
+            const users = Array.from(new Set(this.stories.map((story) => story.assignee)));
 
             // This is the *per sprint* amount of points on average a user can complete
-            const userPointVelocity = getCombinedUserPointVelocity();
+            const userPointVelocity = getCombinedUserPointVelocity(users);
 
             // This number represents the spread of points, which we will use
             // to multip]ly with the velocity to get the total number of sprints
@@ -159,25 +140,39 @@ class Feature implements Feature {
     }
 
     timeToFinishByAverage(): number {
-        // Get the combined average of the users (hours)
-        const combinedAverage = getCombinedUserTimeVelocity();
+        if (this.stories.length === 0) {
+            return 0;
+        } else {
+            const assignees = this.stories.map((story) => story.assignee);
+            const assigneesSet = new Set(assignees);
+            const users = Array.from(assigneesSet);
 
-        // Get the number of stories in the feature
-        // The estimated time to finish will be the number of stories in the feature
-        // times the combined average divided by the number of users
-        return (this.stories.length * combinedAverage) / users.length;
+            // Get the combined average of the users (hours)
+            const combinedAverage = getCombinedUserTimeVelocity(users);
+
+            // Get the number of stories in the feature
+            // The estimated time to finish will be the number of stories in the feature
+            // times the combined average divided by the number of users
+            return (this.stories.length * combinedAverage) / users.length;
+        }
     }
 
     toString(): string {
-        return `Feature ${this.name}: 
-            Total points: ${this.getTotalPoints()}
-            Estimated time by points: ${this.timeToFinishByPoints().days} days
-            Estimated time by average: ${this.timeToFinishByAverage()} hours
-            ${this.stories.map((story) => story.toString()).join('\n')}`;
+        const name = `Feature ${this.name}:`;
+        const pointTotal = `Total points: ${this.getTotalPoints()}`;
+        const estimatedPoint = `Estimated time by points: ${this.timeToFinishByPoints().days} days`;
+        const estimatedAverage = `Estimated time by average: ${Math.round(this.timeToFinishByAverage())} hours`;
+        const stories = `${this.stories.map((story) => story.toString()).join('\n')}`;
+        const storiesString = this.stories.length > 0 ? `\n${stories}` : '';
+
+        return `${name},\n${pointTotal}\n${estimatedPoint}\n${estimatedAverage}${storiesString}`;
     }
 }
 
-class Epic implements Epic {
+export class Epic {
+    name: string;
+    features: Feature[];
+
     constructor(name: string) {
         this.name = name;
         this.features = [];
@@ -207,8 +202,15 @@ class Epic implements Epic {
     }
 
     timeToFinishByAverage(): number {
+        if (this.features.length === 0) {
+            return 0;
+        }
+
+        const stories = this.features.reduce((stories: Story[], feature: Feature) => stories.concat(feature.stories), []);
+        const users = Array.from(new Set(stories.map((story: Story) => story.assignee)));
+
         // Get the combined average of the users (hours)
-        const combinedAverage = getCombinedUserTimeVelocity();
+        const combinedAverage = getCombinedUserTimeVelocity(users);
 
         // Get the number of stories in the feature
         // The estimated time to finish will be the number of stories in the feature
@@ -217,55 +219,13 @@ class Epic implements Epic {
     }
 
     toString(): string {
-        return `Epic ${this.name}: 
-            Total Points: ${this.getTotalPoints()}
-            Estimated time by points: ${this.timeToFinishByPoints().days} days
-            Estimated time by average: ${this.timeToFinishByAverage()} hours
-            ${this.features.map((story) => story.toString()).join('\n')}`;
+        const name = `Epic ${this.name}:`;
+        const totalPoints = `Total points: ${this.getTotalPoints()}`;
+        const estimatedPoints = `Estimated time by points: ${this.timeToFinishByPoints().days} days`;
+        const estimatedTime = `Estimated time by average: ${this.timeToFinishByAverage()} hours`;
+        const featureText = this.features.map((story) => story.toString()).join('\n');
+        const features = this.features.length > 0 ? `\n${featureText}` : '';
+
+        return `${name}\n${totalPoints}\n${estimatedPoints}\n${estimatedTime}${features}`;
     }
 }
-
-const bob = new User('bob');
-const charles = new User('charles');
-const lily = new User('lily');
-users.push(bob, charles, lily);
-
-const todoApp = new Epic('Todo App');
-epics.push(todoApp);
-
-const listFeature = new Feature('List form');
-todoApp.addFeature(listFeature);
-
-const s1 = new Story('add item', 2);
-const s2 = new Story('edit item', 5);
-const s3 = new Story('delete item', 2);
-
-listFeature.addStory(s1);
-listFeature.addStory(s2);
-listFeature.addStory(s3);
-
-const manageFeature = new Feature('Manage items');
-todoApp.addFeature(manageFeature);
-
-const s4 = new Story('list items', 2);
-const s5 = new Story('check and uncheck items', 3);
-const s6 = new Story('create lists', 5);
-const s7 = new Story('delete lists', 3);
-
-manageFeature.addStory(s4);
-manageFeature.addStory(s5);
-manageFeature.addStory(s6);
-manageFeature.addStory(s7);
-
-epics.forEach((epic: Epic) => {
-    epic.features.forEach((feature: Feature) => {
-        feature.stories.forEach((story: Story) => {
-            const randomUser = users[Math.floor(Math.random() * users.length)]
-            story.assignUser(randomUser);
-            story.setTime((story.points * Math.random()), story.points * Math.random() * 5);
-        });
-    });
-});
-
-users.forEach((user) => console.log(`${user}`));
-epics.forEach((epic) => console.log(`${epic}`));

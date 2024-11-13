@@ -1,4 +1,4 @@
-import TimeSpan from './timeSpan.ts';
+import TimeSpan from '../utils/timeSpan.ts';
 
 const sprintLength = TimeSpan.fromDays(14);
 
@@ -13,12 +13,14 @@ export function getCombinedUserTimeVelocity(users: User[]): number {
 }
 
 export class Story {
+    id: string;
     name: string;
     points: number;
     assignee: User;
     time: TimeSpan;
 
     constructor(name: string, points: number) {
+        this.id = crypto.randomUUID();
         this.name = name;
         this.points = points;
         this.assignee = new User('Unassigned');
@@ -27,7 +29,7 @@ export class Story {
 
     assignUser(user: User) {
         this.assignee = user;
-        user.assignStory(this);
+        user.assignStory(this.id);
     }
 
     setTime(days: number, hours: number) {
@@ -41,21 +43,22 @@ export class Story {
 
 export class User {
     name: string;
-    stories: Story[];
+    stories: Set<string>;
 
     constructor(name: string) {
         this.name = name;
-        this.stories = [];
+        this.stories = new Set<string>();
     }
 
-    assignStory(story: Story) {
-        this.stories.push(story);
+    assignStory(storyId: string) {
+        this.stories.add(storyId);
     }
 
     // *Hours* to complete a story
     timeVelocity(): number {
         let numCompletedStories = 0;
-        const sum: TimeSpan =  this.stories.reduce((total: TimeSpan, story: Story) => {
+        const stories = Array.from(this.stories);
+        const sum: TimeSpan =  stories.reduce((total: TimeSpan, story: Story) => {
             if (story.time == TimeSpan.zero) {
                 return total;
             } else {

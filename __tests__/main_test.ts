@@ -6,7 +6,7 @@ import {
     Story,
     Feature,
     Epic
-} from "./main.ts";
+} from "../src/models/main.ts";
 
 Deno.test(function createUserTest() {
    const user = new User('test user');

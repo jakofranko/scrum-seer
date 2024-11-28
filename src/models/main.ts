@@ -17,6 +17,8 @@ export class Story {
     name: string;
     points: number;
     assigneeId: string;
+    featureId: string;
+    sprintId: string;
     time: TimeSpan;
 
     constructor(name: string, points: number) {
@@ -24,6 +26,8 @@ export class Story {
         this.name = name;
         this.points = points;
         this.assigneeId = '';
+        this.featureId = '';
+        this.sprintId = '';
         this.time = TimeSpan.zero;
     }
 
@@ -121,20 +125,18 @@ export class User {
 }
 
 export class Feature {
+    id: string;
     name: string;
-    stories: Story[];
+    stories: string[];
 
     constructor(name: string) {
+        this.id = crypto.randomUUID();
         this.name = name;
         this.stories = [];
     }
 
-    addStory(story: Story) {
-        this.stories.push(story)
-    }
-
-    getTotalPoints(): number {
-        return this.stories.reduce((total: number, story: Story) => total + story.points, 0);
+    addStory(storyId: string) {
+        this.stories.push(storyId)
     }
 
     timeToFinishByPoints(): TimeSpan {
@@ -251,5 +253,15 @@ export class Epic {
         const features = this.features.length > 0 ? `\n${featureText}` : '';
 
         return `${name}\n${totalPoints}\n${estimatedPoints}\n${estimatedTime}${features}`;
+    }
+}
+
+export class Sprint {
+    id: string;
+    stories: string[];
+
+    constructor() {
+        this.id = crypto.randomUUID();
+        this.stories = [];
     }
 }

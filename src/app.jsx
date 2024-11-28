@@ -4,6 +4,7 @@ import UsersRoute from './routes/users.jsx';
 import EpicsRoute from './routes/epics.jsx';
 import FeaturesRoute from './routes/features.jsx';
 import StoriesRoute from './routes/stories.jsx';
+import SprintsRoute from './routes/sprints.jsx';
 import HomeRoute from './routes/home.jsx';
 import './app.css';
 
@@ -20,6 +21,7 @@ export function App() {
                   <Route path="/epics" component={EpicsRoute} />
                   <Route path="/stories" component={StoriesRoute} />
                   <Route path="/features" component={FeaturesRoute} />
+                  <Route path="/sprints" component={SprintsRoute} />
               </Router>
           </main>
       </ErrorBoundary>

@@ -4,6 +4,7 @@ const hrefs = {
     Epics: '/epics',
     Features: '/features',
     Stories: '/stories',
+    Sprints: '/sprints',
 };
 
 export default function Nav() {

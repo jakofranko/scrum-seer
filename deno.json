@@ -5,6 +5,7 @@
 	"compilerOptions": {
 		"jsx": "react-jsxdev",
 		"jsxImportSource": "preact"
+        "lib": "ESNext"
 	},
 	"imports": {
 		"@std/assert": "jsr:@std/assert@1",

@@ -1,5 +1,5 @@
 import { Feature } from '../models/main.ts';
-import useAppState from '../hooks/useAppState.jsx';
+import useAppState from '../hooks/useAppState.tsx';
 
 
 export default function FeatureForm() {

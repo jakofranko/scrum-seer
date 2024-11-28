@@ -1,6 +1,6 @@
 import Nav from "../components/Nav.jsx";
 import UserForm from "../components/UserForm.jsx";
-import useAppState from "../hooks/useAppState.jsx";
+import useAppState from "../hooks/useAppState.tsx";
 
 export default function UsersRoute() {
     const { state } = useAppState();

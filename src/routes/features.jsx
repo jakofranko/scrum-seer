@@ -1,6 +1,6 @@
 import Nav from "../components/Nav.jsx";
 import FeatureForm from "../components/FeatureForm.jsx";
-import useAppState from "../hooks/useAppState.jsx";
+import useAppState from "../hooks/useAppState.tsx";
 
 export default function FeaturesRoute() {
     const { state } = useAppState();

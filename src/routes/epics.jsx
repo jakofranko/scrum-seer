@@ -1,6 +1,6 @@
 import Nav from "../components/Nav.jsx";
 import EpicForm from "../components/EpicForm.jsx";
-import useAppState from "../hooks/useAppState.jsx";
+import useAppState from "../hooks/useAppState.tsx";
 
 export default function EpicsRoute() {
     const { state } = useAppState();

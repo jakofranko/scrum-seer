@@ -16,20 +16,19 @@ export class Story {
     id: string;
     name: string;
     points: number;
-    assignee: User;
+    assigneeId: string;
     time: TimeSpan;
 
     constructor(name: string, points: number) {
         this.id = crypto.randomUUID();
         this.name = name;
         this.points = points;
-        this.assignee = new User('Unassigned');
+        this.assigneeId = '';
         this.time = TimeSpan.zero;
     }
 
-    assignUser(user: User) {
-        this.assignee = user;
-        user.assignStory(this.id);
+    assignUser(userId: string) {
+        this.assigneeId = userId;
     }
 
     setTime(days: number, hours: number) {
@@ -37,21 +36,29 @@ export class Story {
     }
 
     toString() {
-        return `Story ${this.name}: ${this.points} - ${this.assignee.name} (${this.time.hours} hours)`;
+        return `Story ${this.name}: ${this.points} - ${this.assigneeId} (${this.time.hours} hours)`;
     }
 }
 
 export class User {
+    id: string;
     name: string;
-    stories: Set<string>;
+    stories: Set<string> | string[];
 
     constructor(name: string) {
+        this.id = crypto.randomUUID();
         this.name = name;
         this.stories = new Set<string>();
     }
 
     assignStory(storyId: string) {
-        this.stories.add(storyId);
+        if (Array.isArray(this.stories)) {
+            this.stories.push(storyId);
+        } else if (this.stories instanceof Set) {
+            this.stories.add(storyId);
+        } else {
+            throw Error('stories property is not set properly');
+        }
     }
 
     // *Hours* to complete a story

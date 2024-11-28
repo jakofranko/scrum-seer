@@ -1,4 +1,3 @@
-import Nav from "../components/Nav.jsx";
 import EpicForm from "../components/EpicForm.jsx";
 import useAppState from "../hooks/useAppState.tsx";
 
@@ -8,7 +7,6 @@ export default function EpicsRoute() {
 
     return (
         <section>
-            <Nav />
             <h1>Epics</h1>
             <ul>
                 {epics.map((epic) => <li>{epic.name}</li>)}

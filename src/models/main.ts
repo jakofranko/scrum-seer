@@ -1,6 +1,6 @@
 import TimeSpan from '../utils/timeSpan.ts';
 
-const sprintLength = TimeSpan.fromDays(14);
+export const sprintLength = TimeSpan.fromDays(14);
 
 export function getCombinedUserPointVelocity(users: User[]): number {
     const velocities = users.map((user) => user.pointVelocity());
@@ -40,15 +40,29 @@ export class Story {
     }
 }
 
+interface LocalStorageUser {
+	id: string;
+	name: string;
+	stories: string[];
+}
+
 export class User {
     id: string;
     name: string;
     stories: Set<string> | string[];
 
-    constructor(name: string) {
-        this.id = crypto.randomUUID();
-        this.name = name;
-        this.stories = new Set<string>();
+    constructor(name: string | LocalStorageUser) {
+		if (typeof name == 'string') {
+			this.id = crypto.randomUUID();
+			this.name = name;
+			this.stories = new Set<string>();
+		} else if (name instanceof Object) {
+			this.id = name.id;
+			this.name = name.name;
+			this.stories = new Set(name.stories);
+		} else {
+			throw Error('Incorrect initialization parameters for User');
+		}
     }
 
     assignStory(storyId: string) {

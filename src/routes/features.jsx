@@ -1,4 +1,3 @@
-import Nav from "../components/Nav.jsx";
 import FeatureForm from "../components/FeatureForm.jsx";
 import useAppState from "../hooks/useAppState.tsx";
 
@@ -8,7 +7,6 @@ export default function FeaturesRoute() {
 
     return (
         <section>
-            <Nav />
             <h1>Features</h1>
             <ul>
                 {features.map((feature) => <li>{feature.name}</li>)}

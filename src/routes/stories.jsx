@@ -1,4 +1,3 @@
-import Nav from "../components/Nav.jsx";
 import StoryForm from "../components/StoryForm.jsx";
 import UserDropdown from "../components/UserDropdown.jsx";
 import useAppState from "../hooks/useAppState.tsx";
@@ -18,7 +17,6 @@ export default function StorysRoute() {
 
     return (
         <section>
-            <Nav />
             <h1>Stories</h1>
             <ul>
                 {stories.map((story) => (

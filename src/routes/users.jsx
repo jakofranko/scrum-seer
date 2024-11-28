@@ -1,4 +1,3 @@
-import Nav from "../components/Nav.jsx";
 import UserForm from "../components/UserForm.jsx";
 import useAppState from "../hooks/useAppState.tsx";
 
@@ -8,7 +7,6 @@ export default function UsersRoute() {
 
     return (
         <section>
-            <Nav />
             <h1>Users</h1>
             <ul>
                 {users.map((user) => <li>{user.name}</li>)}
